@@ -1,15 +1,6 @@
 # Laravel Inertia Vue3 PayPal Checkout System
 
-A modern, full-featured### 🔔 Comprehensive Webhook Integration
-- **Real-time order status updates**
-- **Payment event handling:**
-  - `CHECKOUT.ORDER.APPROVED` - Order approval tracking
-  - `PAYMENT.CAPTURE.COMPLETED` - Payment success confirmation
-  - `PAYMENT.CAPTURE.DENIED` - Payment failure handling
-  - `PAYMENT.CAPTURE.REFUNDED` - Refund processing
-- **PayPal webhook signature verification**
-- **Complete event logging and tracking**
-- **Automatic order status synchronization**ing system with PayPal payment processing, built using Laravel 12, Inertia.js, Vue 3, and comprehensive webhook integration.
+A modern, full-featured ordeing system with PayPal payment processing, built using Laravel 12, Inertia.js, Vue 3, and comprehensive webhook integration.
 
 ## 🚀 Live Demo
 **Try it now:** [https://laravel-inertia-paypal.laravelcs.com/checkout](https://laravel-inertia-paypal.laravelcs.com/checkout)
