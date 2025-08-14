@@ -1,22 +1,31 @@
-# Laravel Inertia Vue3 Stripe Checkout System
+# Laravel Inertia Vue3 PayPal Checkout System
 
-A modern, full-featured food ordering system with Stripe payment processing, built using Laravel 12, Inertia.js, Vue 3, and comprehensive webhook integration.
+A modern, full-featured### 🔔 Comprehensive Webhook Integration
+- **Real-time order status updates**
+- **Payment event handling:**
+  - `CHECKOUT.ORDER.APPROVED` - Order approval tracking
+  - `PAYMENT.CAPTURE.COMPLETED` - Payment success confirmation
+  - `PAYMENT.CAPTURE.DENIED` - Payment failure handling
+  - `PAYMENT.CAPTURE.REFUNDED` - Refund processing
+- **PayPal webhook signature verification**
+- **Complete event logging and tracking**
+- **Automatic order status synchronization**ing system with PayPal payment processing, built using Laravel 12, Inertia.js, Vue 3, and comprehensive webhook integration.
 
 ## 🚀 Live Demo
-**Try it now:** [https://laravel-inertia-stripe.laravelcs.com/checkout](https://laravel-inertia-stripe.laravelcs.com/checkout)
+**Try it now:** [https://laravel-inertia-paypal.laravelcs.com/checkout](https://laravel-inertia-paypal.laravelcs.com/checkout)
 
 Experience the complete checkout flow with real-time payment processing and webhook integration!
 
 ## Screenshots
 
-![Laravel inertia stripe checkout](https://laravelcs.com/images/github/laravel-ineria-stripe-checkout.png)
+![Laravel inertia stripe checkout](https://laravelcs.com/images/github/laravel-ineria-paypal-checkout.png)
 
 ## 🛠️ Technology Stack
 
 ### Backend
 - **Laravel 12** - Latest PHP framework
 - **Inertia.js Laravel** (v2.0) - Server-side adapter
-- **Stripe PHP SDK** (v17.5) - Payment processing
+- **PayPal REST API** (v2) - Payment processing with HTTP client
 - **MySQL** - Database
 - **PHP 8.2+** - Modern PHP features
 
@@ -24,7 +33,7 @@ Experience the complete checkout flow with real-time payment processing and webh
 - **Vue 3** (v3.5.18) - Progressive JavaScript framework
 - **Inertia.js Vue3** (v2.0.17) - Client-side adapter
 - **Bootstrap 5** (v5.3.3) - UI framework
-- **Stripe.js** (v7.8.0) - Client-side payment processing
+- **PayPal JavaScript SDK** (@paypal/paypal-js) - Client-side payment processing
 - **Vite** (v7.0.4) - Build tool and dev server
 
 ## ✨ Key Features
@@ -41,11 +50,12 @@ Experience the complete checkout flow with real-time payment processing and webh
   - Delivery (with shipping cost)
   - Takeaway (free pickup)  
   - Pay on Spot (no online payment)
-- **Stripe Payment Intents** - Modern payment processing
-- **SCA Compliance** - Strong Customer Authentication support
-- **3D Secure** - Enhanced security for European customers
+- **PayPal Smart Payment Buttons** - Modern payment processing
+- **PayPal Orders API** - Secure order creation and capture
+- **Multiple Payment Methods** - PayPal, Pay Later, Debit/Credit Cards
 - **Real-time payment validation**
 - **Automatic payment error handling**
+- **Dynamic order total calculation** - Updates when switching delivery types
 
 ### � Order Management System
 - **Interactive Order Status Management:**
@@ -59,7 +69,7 @@ Experience the complete checkout flow with real-time payment processing and webh
   - `confirmed` → `cancelled` (without stripe refund processing)
 - **Smart Status Transitions:**
   - Validation prevents invalid status changes
-  - Automatic refund initiation for Stripe payments ( Not added - kept for future improvements )
+  - Automatic refund initiation for PayPal payments (Ready for implementation)
   - Comprehensive cancellation reason tracking
 - **User-Friendly Interface:**
   - Confirmation modals for critical actions
@@ -90,9 +100,9 @@ Experience the complete checkout flow with real-time payment processing and webh
 - **Clean, modern UI/UX**
 
 ### 🔐 Security & Validation
-- **Server-side form validation**
+- **Server-side form validation** with novalidate HTML5 bypass
 - **CSRF protection**
-- **Stripe webhook signature verification**
+- **PayPal webhook signature verification**
 - **SQL injection prevention**
 - **XSS protection**
 - **Conditional validation** (delivery address requirements)
@@ -110,15 +120,15 @@ Experience the complete checkout flow with real-time payment processing and webh
 ```
 users (1:n) orders (1:n) order_items (n:1) food_items
 cart_items (n:1) food_items
-orders (1:1) payment_intents (via Stripe)
+orders (1:1) paypal_orders (via PayPal API)
 ```
 
 ## 🔧 Installation & Setup
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/mmrahmanwritescode/laravel-inertia-stripe-checkout
-cd laravel-inertia-stripe-checkout
+git clone https://github.com/mmrahmanwritescode/laravel-inertia-paypal-checkout
+cd laravel-inertia-paypal-checkout
 ```
 
 ### 2. Backend Setup
@@ -148,12 +158,14 @@ DB_PASSWORD=your_password
 php artisan migrate:fresh --seed
 ```
 
-### 4. Stripe Configuration
+### 4. PayPal Configuration
 ```bash
 # Add to .env file:
-STRIPE_KEY=pk_test_your_publishable_key
-STRIPE_SECRET=sk_test_your_secret_key
-STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+PAYPAL_CLIENT_ID=your_paypal_client_id
+PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+PAYPAL_MODE=sandbox  # or 'live' for production
+PAYPAL_WEBHOOK_ID=your_webhook_id
+PAYPAL_CURRENCY=USD
 ```
 
 ### 5. Frontend Setup
@@ -169,19 +181,21 @@ npm run build
 ```
 
 ### 6. Webhook Setup
-1. **Stripe Dashboard Configuration:**
-   - Go to Stripe Dashboard → Webhooks
-   - Add endpoint: `https://yourdomain.com/stripe/webhook`
-   - Select events: `payment_intent.succeeded`, `payment_intent.payment_failed`, `payment_intent.canceled`, `payment_intent.requires_action`, `charge.dispute.created`
-   - Copy webhook signing secret to `.env`
+1. **PayPal Developer Dashboard Configuration:**
+   - Go to PayPal Developer Dashboard → My Apps & Credentials
+   - Select your app → Webhooks tab
+   - Add endpoint: `https://yourdomain.com/paypal/webhook`
+   - Select events: `CHECKOUT.ORDER.APPROVED`, `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED`, `PAYMENT.CAPTURE.REFUNDED`
+   - Copy webhook ID to `.env`
 
-2. **Local Development (using Stripe CLI):**
+2. **Local Development (using ngrok for testing):**
 ```bash
-# Install Stripe CLI
-stripe listen --forward-to localhost:8000/stripe/webhook
+# Install ngrok and expose local server
+ngrok http 8000
 
-# Copy webhook secret to .env
-STRIPE_WEBHOOK_SECRET=whsec_...
+# Update webhook URL in PayPal dashboard
+# Copy webhook ID to .env
+PAYPAL_WEBHOOK_ID=your_webhook_id
 ```
 
 ### 7. Start Development Servers
@@ -213,7 +227,7 @@ order_placed → confirmed | cancelled
 - **Cancel Orders:**
   - Reason selection (changed mind, wrong order, too long wait, etc.)
   - Custom reason text input
-  - Automatic refund processing for Stripe payments ( Not added yet )
+  - Automatic refund processing for PayPal payments ( Not added yet )
   - Confirmation modal with order details
   
 - **Confirm Orders:**
@@ -234,20 +248,20 @@ order_placed → confirmed | cancelled
 
 ## 🔄 Payment Flow
 
-### Delivery/Takeaway Orders (Stripe Payment)
+### Delivery/Takeaway Orders (PayPal Payment)
 1. **User fills checkout form** → Client-side validation
-2. **Payment Intent created** → Server generates Stripe Payment Intent
-3. **Stripe Elements initialized** → Secure card input fields
-4. **Form submission** → Server-side validation
+2. **PayPal Order created** → Server generates PayPal Order via REST API
+3. **PayPal Smart Buttons initialized** → Secure payment interface
+4. **Form submission** → Server-side validation (novalidate form)
 5. **Customer & Order created** → Database records
-6. **Payment processing** → Stripe handles payment
+6. **Payment processing** → PayPal handles payment approval and capture
 7. **Webhook confirmation** → Real-time status updates
 8. **Success redirect** → Order confirmation page
 9. **Order management** → Interactive status updates (cancel/confirm/complete)
 
 ### Pay on Spot Orders
-1. **User fills checkout form** → Client-side validation
-2. **Form submission** → Server-side validation
+1. **User fills checkout form** → Client-side validation bypassed with novalidate
+2. **Form submission** → Server-side validation with proper error rendering
 3. **Order creation** → Direct database storage
 4. **Success redirect** → Order confirmation page
 5. **Order management** → Interactive status updates (cancel/confirm/complete)
@@ -261,7 +275,7 @@ app/
 │   ├── CartController.php          # Shopping cart operations
 │   ├── CheckoutController.php      # Payment processing
 │   ├── OrderController.php         # Order management
-│   └── StripeWebhookController.php # Webhook handling
+│   └── PayPalWebhookController.php # Webhook handling
 ├── Models/
 │   ├── User.php                    # Customer model
 │   ├── FoodItem.php               # Product model
@@ -269,7 +283,7 @@ app/
 │   ├── Order.php                  # Order model
 │   └── OrderItem.php              # Order items model
 ├── Services/
-│   └── StripeService.php          # Stripe integration service
+│   └── PayPalService.php          # PayPal integration service
 └── Helpers/
     └── CartHelpers.php            # Cart utility functions
 ```
@@ -296,27 +310,24 @@ resources/js/
 
 ## 🧪 Testing
 
-### Payment Testing (Stripe Test Cards)
+### Payment Testing (PayPal Sandbox Accounts)
 ```bash
-# Successful payment
-4242 4242 4242 4242
+# Use PayPal Developer Dashboard Sandbox accounts:
+# Personal Account: buyer@example.com / password
+# Business Account: merchant@example.com / password
 
-# 3D Secure authentication required  
-4000 0025 0000 3155
-
-# Card declined
-4000 0000 0000 0002
-
-# Expired card
-4000 0000 0000 0069
+# Test different payment scenarios in sandbox mode
 ```
 
 ### Webhook Testing
 ```bash
-# Test webhook locally with Stripe CLI
-stripe trigger payment_intent.succeeded
-stripe trigger payment_intent.payment_failed
-stripe trigger payment_intent.canceled
+# Test webhook locally using ngrok for PayPal webhook delivery
+# PayPal will send real webhook events to your local endpoint
+
+# Test specific scenarios:
+# - Complete a sandbox PayPal payment
+# - Cancel a PayPal payment mid-flow
+# - Check webhook event logs in Laravel log files
 ```
 
 ## 🔍 Monitoring & Logging
@@ -358,10 +369,9 @@ php artisan view:cache
 
 ### Checkout Endpoints
 - `GET /checkout` - Checkout page
-- `POST /checkout/payment-intent` - Create payment intent
-- `POST /checkout/create-customer` - Create Stripe customer & order
+- `POST /checkout/create-paypal-order` - Create PayPal order
+- `POST /checkout/payment-status` - Handle PayPal payment status
 - `POST /checkout/store` - Store pay-on-spot orders
-- `POST /checkout/payment-status` - Handle payment status
 
 ### Order Endpoints  
 - `GET /orders` - View order history
@@ -375,7 +385,7 @@ php artisan view:cache
 - `POST /clear-cart` - Clear entire cart
 
 ### Webhook Endpoints
-- `POST /stripe/webhook` - Stripe webhook handler
+- `POST /paypal/webhook` - PayPal webhook handler
 
 ## 🤝 Contributing
 
