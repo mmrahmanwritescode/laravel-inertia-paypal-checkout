@@ -66,6 +66,7 @@ const props = defineProps({
 
 const paymentFormRef = ref(null)
 const paypalOrderId = ref(null)
+const approvalUrl = ref(null)
 const processing = ref(false)
 
 const form = useForm({

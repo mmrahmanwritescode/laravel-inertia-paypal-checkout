@@ -97,8 +97,8 @@ class PayPalWebhookController extends Controller
                 ]);
                 
                 // Update order status if needed
-                if ($order->status === 'pending') {
-                    $order->update(['status' => 'approved']);
+                if ($order->status === 'order_in_progress') {
+                    $order->update(['status' => 'order_placed']);
                 }
             } else {
                 Log::warning('PayPal order approved but no matching order found', ['paypal_order_id' => $orderId]);
@@ -128,7 +128,7 @@ class PayPalWebhookController extends Controller
             if ($order) {
                 $order->update([
                     'paypal_capture_id' => $captureId,
-                    'status' => 'order_placed'
+                    'status' => 'confirmed'
                 ]);
 
                 Log::info('PayPal payment captured and order updated', [
