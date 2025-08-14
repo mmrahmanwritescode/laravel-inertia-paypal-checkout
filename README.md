@@ -77,17 +77,17 @@ Experience the complete checkout flow with real-time payment processing and webh
   - Success/error message feedback
   - Order-specific action buttons
 
-### �🔔 Comprehensive Webhook Integration
+🔔 Comprehensive Webhook Integration
 - **Real-time order status updates**
 - **Payment event handling:**
-  - `payment_intent.succeeded` - Order confirmation
-  - `payment_intent.payment_failed` - Payment failure handling
-  - `payment_intent.canceled` - Order cancellation
-  - `payment_intent.requires_action` - 3D Secure handling
-  - `charge.dispute.created` - Chargeback notifications
-- **Secure webhook signature verification**
+  - `CHECKOUT.ORDER.APPROVED` - Order approval confirmation
+  - `PAYMENT.CAPTURE.COMPLETED` - Payment successful completion
+  - `PAYMENT.CAPTURE.DENIED` - Payment failure handling
+  - `PAYMENT.CAPTURE.REFUNDED` - Refund processing
+  - `CHECKOUT.ORDER.CANCELLED` - Order cancellation
+- **PayPal webhook signature verification**
 - **Complete event logging and tracking**
-- **Automatic order status synchronization**
+- **Automatic order status synchronization** Webhook Integration
 
 ### 🎯 User Experience
 - **Single Page Application** feel with Inertia.js
