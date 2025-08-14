@@ -117,6 +117,10 @@ watch(() => form.order_type, async (newType, oldType) => {
         // Create PayPal order if switching from pay on spot to payment method
         console.log('Switched from pay on spot to payment method, creating PayPal order...')
         await createPayPalOrderForUI()
+    } else if (newType !== 'pay_on_spot' && oldType !== 'pay_on_spot' && paypalOrderId.value) {
+        // Recreate PayPal order if switching between delivery/takeaway (shipping cost changed)
+        console.log('Order type changed between delivery/takeaway, recreating PayPal order with new total...')
+        await createPayPalOrderForUI()
     }
 })
 

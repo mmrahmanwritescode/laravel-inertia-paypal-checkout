@@ -57,6 +57,7 @@ const paypalSDK = ref(null)
 const paypalReady = ref(false)
 const error = ref('')
 const paypalButtons = ref(null)
+const isSettingUp = ref(false)
 
 let pendingConfirmation = null
 
@@ -81,7 +82,13 @@ onMounted(async () => {
 
 // Watch for PayPal order ID changes
 watch(() => props.paypalOrderId, async (newOrderId, oldOrderId) => {
-    console.log('PayPal order ID changed in PayPalPaymentForm:', { newOrderId, oldOrderId, hasPayPal: !!paypalSDK.value })
+    console.log('PayPal order ID changed in PayPalPaymentForm:', { newOrderId, oldOrderId, hasPayPal: !!paypalSDK.value, isSettingUp: isSettingUp.value })
+    
+    // Skip if already setting up to prevent duplicates
+    if (isSettingUp.value) {
+        console.log('PayPal buttons setup already in progress, skipping...')
+        return
+    }
     
     // Only setup if we have a new order ID and it's different from the old one
     if (newOrderId && newOrderId !== oldOrderId && paypalSDK.value) {
@@ -89,19 +96,7 @@ watch(() => props.paypalOrderId, async (newOrderId, oldOrderId) => {
         await setupPayPalElement(newOrderId)
     } else if (!newOrderId) {
         console.log('PayPal order ID cleared, clearing buttons')
-        // Clear buttons if order ID is cleared
-        const container = document.getElementById('paypal-button-container')
-        if (container) {
-            container.innerHTML = ''
-        }
-        if (paypalButtons.value && typeof paypalButtons.value.close === 'function') {
-            try {
-                paypalButtons.value.close()
-            } catch (e) {
-                console.log('Error closing PayPal buttons:', e)
-            }
-        }
-        paypalButtons.value = null
+        await clearPayPalButtons()
     }
 })
 
@@ -134,34 +129,41 @@ const initializePayPal = async () => {
     }
 }
 
+const clearPayPalButtons = async () => {
+    console.log('Clearing PayPal buttons')
+    const container = document.getElementById('paypal-button-container')
+    if (container) {
+        container.innerHTML = ''
+    }
+    if (paypalButtons.value && typeof paypalButtons.value.close === 'function') {
+        try {
+            paypalButtons.value.close()
+        } catch (e) {
+            console.log('Error closing PayPal buttons:', e)
+        }
+    }
+    paypalButtons.value = null
+}
+
 const setupPayPalElement = async (paypalOrderId) => {
     console.log('Setting up PayPal buttons with order ID:', paypalOrderId)
     console.log('PayPal SDK instance:', paypalSDK.value)
     
-    if (!paypalSDK.value || !paypalOrderId) {
-        console.log('Missing PayPal SDK or order ID', { 
+    if (!paypalSDK.value || !paypalOrderId || isSettingUp.value) {
+        console.log('Cannot setup PayPal buttons:', { 
             hasPayPal: !!paypalSDK.value, 
-            hasOrderId: !!paypalOrderId 
+            hasOrderId: !!paypalOrderId,
+            isSettingUp: isSettingUp.value
         })
         return
     }
     
     try {
-        // Clear any existing buttons first
-        const container = document.getElementById('paypal-button-container')
-        if (container) {
-            container.innerHTML = ''
-        }
+        isSettingUp.value = true
+        console.log('Starting PayPal button setup...')
         
-        // Destroy existing buttons if they exist
-        if (paypalButtons.value && typeof paypalButtons.value.close === 'function') {
-            try {
-                paypalButtons.value.close()
-            } catch (e) {
-                console.log('Error closing existing PayPal buttons:', e)
-            }
-        }
-        paypalButtons.value = null
+        // Clear any existing buttons first
+        await clearPayPalButtons()
         
         console.log('Creating PayPal Smart Payment Buttons')
         
@@ -226,6 +228,9 @@ const setupPayPalElement = async (paypalOrderId) => {
     } catch (err) {
         error.value = 'Failed to setup payment form'
         console.error('PayPal buttons setup error:', err)
+    } finally {
+        isSettingUp.value = false
+        console.log('PayPal button setup completed')
     }
 }
 
@@ -252,15 +257,11 @@ const handlePayment = async () => {
 
 const reinitializePayment = async () => {
     // Clear existing buttons
-    const container = document.getElementById('paypal-button-container')
-    if (container) {
-        container.innerHTML = ''
-    }
-    paypalButtons.value = null
+    await clearPayPalButtons()
     
     // Wait a bit and reinitialize
     setTimeout(async () => {
-        if (props.paypalOrderId) {
+        if (props.paypalOrderId && !isSettingUp.value) {
             await setupPayPalElement(props.paypalOrderId)
         }
     }, 1000)
@@ -269,18 +270,8 @@ const reinitializePayment = async () => {
 // Cleanup on component unmount
 onUnmounted(() => {
     console.log('PayPalPaymentForm unmounting, cleaning up buttons')
-    const container = document.getElementById('paypal-button-container')
-    if (container) {
-        container.innerHTML = ''
-    }
-    if (paypalButtons.value && typeof paypalButtons.value.close === 'function') {
-        try {
-            paypalButtons.value.close()
-        } catch (e) {
-            console.log('Error closing PayPal buttons on unmount:', e)
-        }
-    }
-    paypalButtons.value = null
+    clearPayPalButtons()
+    isSettingUp.value = false
 })
 
 // Expose methods to parent component

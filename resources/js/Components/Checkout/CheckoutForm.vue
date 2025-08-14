@@ -14,7 +14,7 @@
                 </ul>
             </div> -->
             
-            <form @submit.prevent="$emit('submit')">
+            <form @submit.prevent="$emit('submit')" novalidate>
                 <!-- Order Type -->
                 <div class="mb-4">
                     <label class="form-label fw-bold">Order Type</label>
@@ -68,7 +68,6 @@
                         <input 
                             type="text" 
                             v-model="form.first_name"
-                            required
                             class="form-control"
                             :class="{ 'is-invalid': form.errors.first_name }"
                         />
@@ -81,7 +80,6 @@
                         <input 
                             type="text" 
                             v-model="form.last_name"
-                            required
                             class="form-control"
                             :class="{ 'is-invalid': form.errors.last_name }"
                         />
@@ -98,7 +96,6 @@
                         <input 
                             type="email" 
                             v-model="form.email"
-                            required
                             class="form-control"
                             :class="{ 'is-invalid': form.errors.email }"
                         />
@@ -111,7 +108,6 @@
                         <input 
                             type="tel" 
                             v-model="form.phone"
-                            required
                             class="form-control"
                             :class="{ 'is-invalid': form.errors.phone }"
                         />
@@ -166,7 +162,7 @@
                 <button 
                     v-if="form.order_type === 'pay_on_spot'"
                     type="submit"
-                    :disabled="processing || !form.isDirty"
+                    :disabled="processing"
                     class="btn btn-success w-100 py-3"
                 >
                     <span v-if="processing">
